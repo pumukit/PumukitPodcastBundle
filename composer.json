@@ -1,0 +1,29 @@
+{
+    "name": "teltek/pumukit-podcast-bundle",
+    "type": "symfony-bundle",
+    "description": "Podcast bundle for PuMuKIT",
+    "keywords": [
+        "podcast",
+        "symfony",
+        "bundle",
+        "pumukit",
+        "teltek"
+    ],
+    "homepage": "https://github.com/pumukit/PumukitPodcastBundle",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Teltek Team",
+            "homepage": "http://teltek.es"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "pumukit/pumukit": ">=3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pumukit\\PodcastBundle\\": ""
+        }
+    }
+}
