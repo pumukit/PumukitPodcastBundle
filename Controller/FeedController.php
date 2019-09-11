@@ -196,7 +196,7 @@ class FeedController extends Controller
                                      .'" xmlns:itunesu="'.self::ITUNESU_FEED_URL
                                      .'" xmlns:atom="'.self::ATOM_URL
                                      .'" xml:lang="en" version="2.0"></rss>'
-                                     );
+        );
         $channel = $xml->addChild('channel');
         $atomLink = $channel->addChild('atom:link', null, self::ATOM_URL);
         $atomLink->addAttribute('href', $values['requestURI']);

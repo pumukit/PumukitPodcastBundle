@@ -30,7 +30,7 @@ Command to load a controlled Podcast ItunesU tags data into a database. Useful f
 The --force parameter has to be used to actually drop the database.
 
 EOT
-          )
+            )
         ;
     }
 
