@@ -17,9 +17,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class FeedController extends Controller
 {
-    const ITUNES_DTD_URL = 'http://www.itunes.com/dtds/podcast-1.0.dtd';
-    const ITUNESU_FEED_URL = 'http://www.itunesu.com/feed';
-    const ATOM_URL = 'http://www.w3.org/2005/Atom';
+    public const ITUNES_DTD_URL = 'http://www.itunes.com/dtds/podcast-1.0.dtd';
+    public const ITUNESU_FEED_URL = 'http://www.itunesu.com/feed';
+    public const ATOM_URL = 'http://www.w3.org/2005/Atom';
 
     /**
      * @Route("/list.xml", defaults={"_format": "xml"}, name="pumukit_podcast_list")
