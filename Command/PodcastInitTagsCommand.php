@@ -1,19 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pumukit\PodcastBundle\Command;
 
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Pumukit\SchemaBundle\Document\Tag;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class PodcastInitTagsCommand extends ContainerAwareCommand
+class PodcastInitTagsCommand extends Command
 {
-    private $dm;
-    private $tagRepo;
+    private $documentManager;
 
-    protected function configure()
+    public function __construct(DocumentManager $documentManager)
+    {
+        $this->documentManager = $documentManager;
+        parent::__construct();
+    }
+
+    protected function configure(): void
     {
         $this
             ->setName('podcast:init:tags')
@@ -30,16 +38,13 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->dm = $this->getContainer()->get('doctrine_mongodb')->getManager();
-        $this->tagRepo = $this->dm->getRepository(Tag::class);
-
         if ($input->getOption('force')) {
             $podcastPublicationChannelTag = $this->createTagWithCode('PUCHPODCAST', 'PodcastEDU/iTunesU', 'PUBCHANNELS', false);
             $podcastPublicationChannelTag->setProperty('modal_path', 'pumukitpodcast_modal_index');
-            $this->dm->persist($podcastPublicationChannelTag);
-            $this->dm->flush();
+            $this->documentManager->persist($podcastPublicationChannelTag);
+            $this->documentManager->flush();
 
             $output->writeln('Tag persisted - new id: '.$podcastPublicationChannelTag->getId().' cod: '.$podcastPublicationChannelTag->getCod());
         } else {
@@ -53,9 +58,9 @@ EOT
         return 0;
     }
 
-    private function createTagWithCode($code, $title, $tagParentCode = null, $metatag = false)
+    private function createTagWithCode(string $code, string $title, string $tagParentCode = null, bool $metatag = false): Tag
     {
-        if ($tag = $this->tagRepo->findOneByCod($code)) {
+        if ($tag = $this->documentManager->getRepository(Tag::class)->findOneBy(['cod' => $code])) {
             throw new \Exception('Nothing done - Tag retrieved from DB id: '.$tag->getId().' cod: '.$tag->getCod());
         }
         $tag = new Tag();
@@ -66,14 +71,14 @@ EOT
         $tag->setTitle($title, 'gl');
         $tag->setTitle($title, 'en');
         if ($tagParentCode) {
-            if ($parent = $this->tagRepo->findOneByCod($tagParentCode)) {
+            if ($parent = $this->documentManager->getRepository(Tag::class)->findOneBy(['cod' => $tagParentCode])) {
                 $tag->setParent($parent);
             } else {
                 throw new \Exception('Nothing done - There is no tag in the database with code '.$tagParentCode.' to be the parent tag');
             }
         }
-        $this->dm->persist($tag);
-        $this->dm->flush();
+        $this->documentManager->persist($tag);
+        $this->documentManager->flush();
 
         return $tag;
     }

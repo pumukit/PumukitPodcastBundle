@@ -1,25 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pumukit\PodcastBundle\Command;
 
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Pumukit\SchemaBundle\Document\Tag;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
-class PodcastInitItunesUTagsCommand extends ContainerAwareCommand
+class PodcastInitItunesUTagsCommand extends Command
 {
-    private $dm;
-    private $tagRepo;
+    private $documentManager;
     private $tagsPath = '../Resources/data/tags/';
 
-    protected function configure()
+    public function __construct(DocumentManager $documentManager)
+    {
+        $this->documentManager = $documentManager;
+
+        parent::__construct();
+    }
+
+    protected function configure(): void
     {
         $this
-            ->setName('podcast:init:itunesu')
+            ->setName('pumukit:podcast:init:itunesu')
             ->setDescription('Load podcast itunesu tag data fixture to your database')
             ->addArgument('file', InputArgument::OPTIONAL, 'Input CSV path')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action')
@@ -34,11 +43,8 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->dm = $this->getContainer()->get('doctrine_mongodb')->getManager();
-        $this->tagRepo = $this->dm->getRepository(Tag::class);
-
         if ($input->getOption('force')) {
             return $this->executeTags($input, $output);
         }
@@ -49,7 +55,7 @@ EOT
         return -1;
     }
 
-    protected function executeTags(InputInterface $input, OutputInterface $output)
+    protected function executeTags(InputInterface $input, OutputInterface $output): int
     {
         $finder = new Finder();
         $finder->files()->in(__DIR__.'/'.$this->tagsPath);
@@ -59,7 +65,8 @@ EOT
 
             return -1;
         }
-        $root = $this->tagRepo->findOneByCod('ROOT');
+
+        $root = $this->documentManager->getRepository(Tag::class)->findOneBy(['cod' => 'ROOT']);
         if (null === $root) {
             $output->writeln("<error>Tags: There's no ROOT tag. Please exec pumukit:init:repo tag</error>");
 
@@ -92,12 +99,10 @@ EOT
             while (false !== ($currentRow = fgetcsv($file, 0, ';'))) {
                 $number = count($currentRow);
                 if (('tag' === $repoName) && (6 == $number || 9 == $number)) {
-                    //Check header rows
                     if ('id' == trim($currentRow[0])) {
                         continue;
                     }
-                    $parent = $idCodMapping[$currentRow[2]]
-                      ?? $root;
+                    $parent = $idCodMapping[$currentRow[2]] ?? $root;
 
                     try {
                         $tag = $this->createTagFromCsvArray($currentRow, $parent);
@@ -118,7 +123,7 @@ EOT
                 ++$row;
             }
             fclose($file);
-            $this->dm->flush();
+            $this->documentManager->flush();
         } else {
             $output->writeln('<error>Error opening '.$file.'</error>');
 
@@ -126,9 +131,9 @@ EOT
         }
     }
 
-    private function createTagFromCsvArray($csv_array, $tag_parent = null)
+    private function createTagFromCsvArray($csv_array, $tag_parent = null): Tag
     {
-        if ($tag = $this->tagRepo->findOneByCod($csv_array[1])) {
+        if ($tag = $this->documentManager->getRepository(Tag::class)->findOneBy(['cod' => $csv_array[1]])) {
             throw new \LengthException('Nothing done - Tag retrieved from DB id: '.$tag->getId().' cod: '.$tag->getCod());
         }
 
@@ -153,7 +158,7 @@ EOT
             $tag->setTitle($csv_array[8], 'de');
         }
 
-        $this->dm->persist($tag);
+        $this->documentManager->persist($tag);
 
         return $tag;
     }

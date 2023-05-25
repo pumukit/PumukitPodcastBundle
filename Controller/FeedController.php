@@ -1,43 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pumukit\PodcastBundle\Controller;
 
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Pumukit\SchemaBundle\Document\EmbeddedBroadcast;
 use Pumukit\SchemaBundle\Document\MultimediaObject;
 use Pumukit\SchemaBundle\Document\Series;
 use Pumukit\SchemaBundle\Document\Tag;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * @Route("/podcast")
  */
-class FeedController extends Controller
+class FeedController extends AbstractController
 {
-    public const ITUNES_DTD_URL = 'http://www.itunes.com/dtds/podcast-1.0.dtd';
-    public const ITUNESU_FEED_URL = 'http://www.itunesu.com/feed';
-    public const ATOM_URL = 'http://www.w3.org/2005/Atom';
+    public const ITUNES_DTD_URL = 'https://www.itunes.com/dtds/podcast-1.0.dtd';
+    public const ITUNESU_FEED_URL = 'https://www.itunesu.com/feed';
+    public const ATOM_URL = 'https://www.w3.org/2005/Atom';
+
+    private $documentManager;
+    private $router;
+
+    public function __construct(DocumentManager $documentManager, UrlGeneratorInterface $router)
+    {
+        $this->documentManager = $documentManager;
+        $this->router = $router;
+    }
 
     /**
      * @Route("/list.xml", defaults={"_format": "xml"}, name="pumukit_podcast_list")
      */
-    public function listAction(Request $request)
+    public function listAction(): Response
     {
-        $router = $this->get('router');
-        $mmObjRepo = $this->get('doctrine_mongodb.odm.document_manager')
-            ->getRepository(MultimediaObject::class)
-        ;
-
-        $qb = $mmObjRepo->createStandardQueryBuilder();
+        $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
         $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
         $series = $qb->distinct('series')->getQuery()->execute();
 
         $xml = new \SimpleXMLElement('<list/>');
         foreach ($series as $s) {
-            $url = $router->generate('pumukit_podcast_series_collection', ['id' => $s], UrlGeneratorInterface::ABSOLUTE_URL);
+            $url = $this->router->generate('pumukit_podcast_series_collection', ['id' => $s], UrlGeneratorInterface::ABSOLUTE_URL);
             $xml->addChild('podcast', $url);
         }
 
@@ -47,7 +54,7 @@ class FeedController extends Controller
     /**
      * @Route("/video.xml", defaults={"_format": "xml"}, name="pumukit_podcast_video")
      */
-    public function videoAction(Request $request)
+    public function videoAction(Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudio(false);
         $values = $this->getValues($request, 'video', null);
@@ -59,7 +66,7 @@ class FeedController extends Controller
     /**
      * @Route("/audio.xml", defaults={"_format": "xml"}, name="pumukit_podcast_audio")
      */
-    public function audioAction(Request $request)
+    public function audioAction(Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudio(true);
         $values = $this->getValues($request, 'audio', null);
@@ -71,7 +78,7 @@ class FeedController extends Controller
     /**
      * @Route("/series/{id}/video.xml", defaults={"_format": "xml"}, name="pumukit_podcast_series_video")
      */
-    public function seriesVideoAction(Series $series, Request $request)
+    public function seriesVideoAction(Series $series, Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudioAndSeries(false, $series);
         $values = $this->getValues($request, 'video', $series);
@@ -83,7 +90,7 @@ class FeedController extends Controller
     /**
      * @Route("/series/{id}/audio.xml", defaults={"_format": "xml"}, name="pumukit_podcast_series_audio")
      */
-    public function seriesAudioAction(Series $series, Request $request)
+    public function seriesAudioAction(Series $series, Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudioAndSeries(true, $series);
         $values = $this->getValues($request, 'audio', $series);
@@ -95,7 +102,7 @@ class FeedController extends Controller
     /**
      * @Route("/series/{id}/collection.xml", defaults={"_format": "xml"}, name="pumukit_podcast_series_collection")
      */
-    public function seriesCollectionAction(Series $series, Request $request)
+    public function seriesCollectionAction(Series $series, Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsBySeries($series);
         $values = $this->getValues($request, 'video', $series);
@@ -106,8 +113,7 @@ class FeedController extends Controller
 
     private function createPodcastMultimediaObjectByAudioQueryBuilder($isOnlyAudio = false)
     {
-        $mmObjRepo = $this->get('doctrine_mongodb.odm.document_manager')->getRepository(MultimediaObject::class);
-        $qb = $mmObjRepo->createStandardQueryBuilder();
+        $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
         $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
         $qb->field('tracks')->elemMatch(
             $qb->expr()
@@ -135,10 +141,7 @@ class FeedController extends Controller
 
     private function getPodcastMultimediaObjectsBySeries(Series $series)
     {
-        $mmObjRepo = $this->get('doctrine_mongodb.odm.document_manager')
-            ->getRepository(MultimediaObject::class)
-        ;
-        $qb = $mmObjRepo->createStandardQueryBuilder();
+        $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
         $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
         $qb->field('series')->references($series);
 

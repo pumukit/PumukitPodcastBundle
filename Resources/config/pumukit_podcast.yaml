@@ -1,0 +1,26 @@
+services:
+  _defaults:
+    autowire:      true
+    autoconfigure: true
+    public:        true
+
+  Pumukit\PodcastBundle\Controller\:
+    resource: '../../Controller'
+    tags: ['controller.service_arguments']
+
+  Pumukit\PodcastBundle\Services\ConfigurationService:
+    class: Pumukit\PodcastBundle\Services\ConfigurationService
+    arguments:
+      $channelTitle: '%pumukit_podcast.channel_title%'
+      $channelDescription: '%pumukit_podcast.channel_description%'
+      $channelCopyright: '%pumukit_podcast.channel_copyright%'
+      $itunesCategory: '%pumukit_podcast.itunes_category%'
+      $itunesSummary: '%pumukit_podcast.itunes_summary%'
+      $itunesSubtitle: '%pumukit_podcast.itunes_subtitle%'
+      $itunesAuthor: '%pumukit_podcast.itunes_author%'
+      $itunesExplicit: '%pumukit_podcast.itunes_explicit%'
+
+  Pumukit\PodcastBundle\EventListener\FilterListener:
+    class: Pumukit\PodcastBundle\EventListener\FilterListener
+    tags:
+      - { name: "kernel.event_listener", event: "kernel.request" }
