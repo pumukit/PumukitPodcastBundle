@@ -2,59 +2,33 @@
 
 namespace Pumukit\PodcastBundle\Tests\Controller;
 
-use Pumukit\SchemaBundle\Document\MultimediaObject;
-use Pumukit\SchemaBundle\Document\Series;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Pumukit\CoreBundle\Tests\PumukitTestCase;
 
 /**
  * @internal
+ *
  * @coversNothing
  */
-class DefaultControllerTest extends WebTestCase
+class DefaultControllerTest extends PumukitTestCase
 {
-    private $dm;
     private $client;
     private $router;
     private $factory;
     private $skipTests = false;
 
-    public function setUp()
+    public function setUp(): void
     {
         $options = ['environment' => 'test'];
         static::bootKernel($options);
-
-        if (!array_key_exists('PumukitPodcastBundle', static::$kernel->getContainer()->getParameter('kernel.bundles'))) {
-            $this->markTestSkipped('PodcastBundle is not installed');
-        }
-
-        $this->client = static::createClient();
-
-        $this->dm = static::$kernel->getContainer()->get('doctrine_mongodb.odm.document_manager');
-        $this->router = static::$kernel->getContainer()->get('router');
-        $this->factory = static::$kernel->getContainer()->get('pumukitschema.factory');
-
-        $this->dm->getDocumentCollection(MultimediaObject::class)
-            ->remove([])
-        ;
-        $this->dm->getDocumentCollection(Series::class)
-            ->remove([])
-        ;
+        parent::setUp();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
-        if (isset($this->dm)) {
-            $this->dm->close();
-        }
-        $this->client = null;
-        $this->dm = null;
-        $this->router = null;
-        $this->factory = null;
-        $this->dm = null;
-        $this->router = null;
-        $this->factory = null;
-        gc_collect_cycles();
         parent::tearDown();
+        $this->dm->close();
+
+        gc_collect_cycles();
     }
 
     public function testVideo()
@@ -71,20 +45,20 @@ class DefaultControllerTest extends WebTestCase
         $this->assertCount(2, $crawler->filter('link'));
         $this->assertCount(1, $crawler->filter('description'));
         $this->assertCount(1, $crawler->filter('generator'));
-        //$this->assertCount(1, $crawler->filter('lastBuildDate'));
+        // $this->assertCount(1, $crawler->filter('lastBuildDate'));
         $this->assertCount(1, $crawler->filter('language'));
         $this->assertCount(1, $crawler->filter('copyright'));
-        //$this->assertCount(1, $crawler->filter('itunes:image'));
+        // $this->assertCount(1, $crawler->filter('itunes:image'));
         $this->assertCount(1, $crawler->filter('image'));
         $this->assertCount(2, $crawler->filter('link'));
-        //$this->assertCount(1, $crawler->filter('itunes:category'));
-        //$this->assertCount(1, $crawler->filter('itunes:summary'));
-        //$this->assertCount(1, $crawler->filter('itunes:subtitle'));
-        //$this->assertCount(1, $crawler->filter('itunes:author'));
-        //$this->assertCount(1, $crawler->filter('itunes:owner'));
-        //$this->assertCount(1, $crawler->filter('itunes:name'));
-        //$this->assertCount(1, $crawler->filter('itunes:email'));
-        //$this->assertCount(1, $crawler->filter('itunes:explicit'));
+        // $this->assertCount(1, $crawler->filter('itunes:category'));
+        // $this->assertCount(1, $crawler->filter('itunes:summary'));
+        // $this->assertCount(1, $crawler->filter('itunes:subtitle'));
+        // $this->assertCount(1, $crawler->filter('itunes:author'));
+        // $this->assertCount(1, $crawler->filter('itunes:owner'));
+        // $this->assertCount(1, $crawler->filter('itunes:name'));
+        // $this->assertCount(1, $crawler->filter('itunes:email'));
+        // $this->assertCount(1, $crawler->filter('itunes:explicit'));
     }
 
     public function testAudio()
@@ -101,20 +75,20 @@ class DefaultControllerTest extends WebTestCase
         $this->assertCount(2, $crawler->filter('link'));
         $this->assertCount(1, $crawler->filter('description'));
         $this->assertCount(1, $crawler->filter('generator'));
-        //$this->assertCount(1, $crawler->filter('lastBuildDate'));
+        // $this->assertCount(1, $crawler->filter('lastBuildDate'));
         $this->assertCount(1, $crawler->filter('language'));
         $this->assertCount(1, $crawler->filter('copyright'));
-        //$this->assertCount(1, $crawler->filter('itunes:image'));
+        // $this->assertCount(1, $crawler->filter('itunes:image'));
         $this->assertCount(1, $crawler->filter('image'));
         $this->assertCount(2, $crawler->filter('link'));
-        //$this->assertCount(1, $crawler->filter('itunes:category'));
-        //$this->assertCount(1, $crawler->filter('itunes:summary'));
-        //$this->assertCount(1, $crawler->filter('itunes:subtitle'));
-        //$this->assertCount(1, $crawler->filter('itunes:author'));
-        //$this->assertCount(1, $crawler->filter('itunes:owner'));
-        //$this->assertCount(1, $crawler->filter('itunes:name'));
-        //$this->assertCount(1, $crawler->filter('itunes:email'));
-        //$this->assertCount(1, $crawler->filter('itunes:explicit'));
+        // $this->assertCount(1, $crawler->filter('itunes:category'));
+        // $this->assertCount(1, $crawler->filter('itunes:summary'));
+        // $this->assertCount(1, $crawler->filter('itunes:subtitle'));
+        // $this->assertCount(1, $crawler->filter('itunes:author'));
+        // $this->assertCount(1, $crawler->filter('itunes:owner'));
+        // $this->assertCount(1, $crawler->filter('itunes:name'));
+        // $this->assertCount(1, $crawler->filter('itunes:email'));
+        // $this->assertCount(1, $crawler->filter('itunes:explicit'));
     }
 
     public function testSeriesVideo()
@@ -132,20 +106,20 @@ class DefaultControllerTest extends WebTestCase
         $this->assertCount(2, $crawler->filter('link'));
         $this->assertCount(1, $crawler->filter('description'));
         $this->assertCount(1, $crawler->filter('generator'));
-        //$this->assertCount(1, $crawler->filter('lastBuildDate'));
+        // $this->assertCount(1, $crawler->filter('lastBuildDate'));
         $this->assertCount(1, $crawler->filter('language'));
         $this->assertCount(1, $crawler->filter('copyright'));
-        //$this->assertCount(1, $crawler->filter('itunes:image'));
+        // $this->assertCount(1, $crawler->filter('itunes:image'));
         $this->assertCount(1, $crawler->filter('image'));
         $this->assertCount(2, $crawler->filter('link'));
-        //$this->assertCount(1, $crawler->filter('itunes:category'));
-        //$this->assertCount(1, $crawler->filter('itunes:summary'));
-        //$this->assertCount(1, $crawler->filter('itunes:subtitle'));
-        //$this->assertCount(1, $crawler->filter('itunes:author'));
-        //$this->assertCount(1, $crawler->filter('itunes:owner'));
-        //$this->assertCount(1, $crawler->filter('itunes:name'));
-        //$this->assertCount(1, $crawler->filter('itunes:email'));
-        //$this->assertCount(1, $crawler->filter('itunes:explicit'));
+        // $this->assertCount(1, $crawler->filter('itunes:category'));
+        // $this->assertCount(1, $crawler->filter('itunes:summary'));
+        // $this->assertCount(1, $crawler->filter('itunes:subtitle'));
+        // $this->assertCount(1, $crawler->filter('itunes:author'));
+        // $this->assertCount(1, $crawler->filter('itunes:owner'));
+        // $this->assertCount(1, $crawler->filter('itunes:name'));
+        // $this->assertCount(1, $crawler->filter('itunes:email'));
+        // $this->assertCount(1, $crawler->filter('itunes:explicit'));
     }
 
     public function testSeriesAudio()
@@ -163,20 +137,20 @@ class DefaultControllerTest extends WebTestCase
         $this->assertCount(2, $crawler->filter('link'));
         $this->assertCount(1, $crawler->filter('description'));
         $this->assertCount(1, $crawler->filter('generator'));
-        //$this->assertCount(1, $crawler->filter('lastBuildDate'));
+        // $this->assertCount(1, $crawler->filter('lastBuildDate'));
         $this->assertCount(1, $crawler->filter('language'));
         $this->assertCount(1, $crawler->filter('copyright'));
-        //$this->assertCount(1, $crawler->filter('itunes:image'));
+        // $this->assertCount(1, $crawler->filter('itunes:image'));
         $this->assertCount(1, $crawler->filter('image'));
         $this->assertCount(2, $crawler->filter('link'));
-        //$this->assertCount(1, $crawler->filter('itunes:category'));
-        //$this->assertCount(1, $crawler->filter('itunes:summary'));
-        //$this->assertCount(1, $crawler->filter('itunes:subtitle'));
-        //$this->assertCount(1, $crawler->filter('itunes:author'));
-        //$this->assertCount(1, $crawler->filter('itunes:owner'));
-        //$this->assertCount(1, $crawler->filter('itunes:name'));
-        //$this->assertCount(1, $crawler->filter('itunes:email'));
-        //$this->assertCount(1, $crawler->filter('itunes:explicit'));
+        // $this->assertCount(1, $crawler->filter('itunes:category'));
+        // $this->assertCount(1, $crawler->filter('itunes:summary'));
+        // $this->assertCount(1, $crawler->filter('itunes:subtitle'));
+        // $this->assertCount(1, $crawler->filter('itunes:author'));
+        // $this->assertCount(1, $crawler->filter('itunes:owner'));
+        // $this->assertCount(1, $crawler->filter('itunes:name'));
+        // $this->assertCount(1, $crawler->filter('itunes:email'));
+        // $this->assertCount(1, $crawler->filter('itunes:explicit'));
     }
 
     public function testSeriesCollection()
@@ -194,19 +168,19 @@ class DefaultControllerTest extends WebTestCase
         $this->assertCount(2, $crawler->filter('link'));
         $this->assertCount(1, $crawler->filter('description'));
         $this->assertCount(1, $crawler->filter('generator'));
-        //$this->assertCount(1, $crawler->filter('lastBuildDate'));
+        // $this->assertCount(1, $crawler->filter('lastBuildDate'));
         $this->assertCount(1, $crawler->filter('language'));
         $this->assertCount(1, $crawler->filter('copyright'));
-        //$this->assertCount(1, $crawler->filter('itunes:image'));
+        // $this->assertCount(1, $crawler->filter('itunes:image'));
         $this->assertCount(1, $crawler->filter('image'));
         $this->assertCount(2, $crawler->filter('link'));
-        //$this->assertCount(1, $crawler->filter('itunes:category'));
-        //$this->assertCount(1, $crawler->filter('itunes:summary'));
-        //$this->assertCount(1, $crawler->filter('itunes:subtitle'));
-        //$this->assertCount(1, $crawler->filter('itunes:author'));
-        //$this->assertCount(1, $crawler->filter('itunes:owner'));
-        //$this->assertCount(1, $crawler->filter('itunes:name'));
-        //$this->assertCount(1, $crawler->filter('itunes:email'));
-        //$this->assertCount(1, $crawler->filter('itunes:explicit'));
+        // $this->assertCount(1, $crawler->filter('itunes:category'));
+        // $this->assertCount(1, $crawler->filter('itunes:summary'));
+        // $this->assertCount(1, $crawler->filter('itunes:subtitle'));
+        // $this->assertCount(1, $crawler->filter('itunes:author'));
+        // $this->assertCount(1, $crawler->filter('itunes:owner'));
+        // $this->assertCount(1, $crawler->filter('itunes:name'));
+        // $this->assertCount(1, $crawler->filter('itunes:email'));
+        // $this->assertCount(1, $crawler->filter('itunes:explicit'));
     }
 }

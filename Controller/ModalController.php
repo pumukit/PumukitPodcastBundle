@@ -1,21 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pumukit\PodcastBundle\Controller;
 
 use Pumukit\SchemaBundle\Document\MultimediaObject;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
-class ModalController extends Controller
+class ModalController extends AbstractController
 {
     /**
      * @Route("/admin/podcast/model/mm/{id}", name="pumukitpodcast_modal_index", defaults={"filter": false})
-     * @Template("PumukitPodcastBundle:Modal:index.html.twig")
      */
-    public function indexAction(Request $request, MultimediaObject $mm)
+    public function indexAction(MultimediaObject $mm): Response
     {
-        return ['mm' => $mm];
+        return $this->render('@PumukitPodcast/Modal/index.html.twig', ['mm' => $mm]);
     }
 }
