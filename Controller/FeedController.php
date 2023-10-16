@@ -165,27 +165,17 @@ class FeedController extends AbstractController
         if ($series) {
             $values['channel_title'] = $series->getTitle();
             $values['channel_description'] = $series->getDescription();
-            $values['copyright'] = $series->getCopyright() ? $series->getCopyright() : 'PuMuKIT2 2015';
-            $values['itunes_category'] = $series->getProperty('itunescategory') ? $series->getProperty('itunescategory') : $container->getParameter('pumukit_podcast.itunes_category');
+            $values['copyright'] = $series->getCopyright() ?: 'PuMuKIT2 2015';
+            $values['itunes_category'] = $series->getProperty('itunescategory') ?: $container->getParameter('pumukit_podcast.itunes_category');
             $values['itunes_summary'] = $series->getDescription();
-            $values['itunes_subtitle'] = $series->getSubtitle() ? $series->getSubtitle() :
-              ($container->getParameter('pumukit_podcast.itunes_subtitle') ? $container->getParameter('pumukit_podcast.itunes_subtitle') : $values['channel_description']);
+            $values['itunes_subtitle'] = $series->getSubtitle() ?: ($container->getParameter('pumukit_podcast.itunes_subtitle') ?: $values['channel_description']);
         } else {
-            $values['channel_title'] = $container->getParameter('pumukit_podcast.channel_title') ?
-              $container->getParameter('pumukit_podcast.channel_title') :
-              $pumukitInfo['title'];
-            $values['channel_description'] = $container->getParameter('pumukit_podcast.channel_description') ?
-              $container->getParameter('pumukit_podcast.channel_description') :
-              $pumukitInfo['description'];
-            $values['copyright'] = $container->getParameter('pumukit_podcast.channel_copyright') ?
-              $container->getParameter('pumukit_podcast.channel_copyright') :
-              ($pumukitInfo['copyright'] ?? 'PuMuKIT2 2015');
+            $values['channel_title'] = $container->getParameter('pumukit_podcast.channel_title') ?: $pumukitInfo['title'];
+            $values['channel_description'] = $container->getParameter('pumukit_podcast.channel_description') ?: $pumukitInfo['description'];
+            $values['copyright'] = $container->getParameter('pumukit_podcast.channel_copyright') ?: $pumukitInfo['copyright'] ?? 'PuMuKIT2 2015';
             $values['itunes_category'] = $container->getParameter('pumukit_podcast.itunes_category');
-            $values['itunes_summary'] = $container->getParameter('pumukit_podcast.itunes_summary') ?
-              $container->getParameter('pumukit_podcast.itunes_summary') :
-              $values['channel_description'];
-            $values['itunes_subtitle'] = $container->getParameter('pumukit_podcast.itunes_subtitle') ?
-              $container->getParameter('pumukit_podcast.itunes_subtitle') : $values['channel_description'];
+            $values['itunes_summary'] = $container->getParameter('pumukit_podcast.itunes_summary') ?: $values['channel_description'];
+            $values['itunes_subtitle'] = $container->getParameter('pumukit_podcast.itunes_subtitle') ?: $values['channel_description'];
         }
 
         return $values;
