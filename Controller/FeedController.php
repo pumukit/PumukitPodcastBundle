@@ -244,7 +244,7 @@ class FeedController extends AbstractController
         $dm = $this->get('doctrine_mongodb.odm.document_manager');
         $router = $this->get('router');
         $tagRepo = $dm->getRepository(Tag::class);
-        $itunesUTag = $tagRepo->findOneByCod('ITUNESU');
+        $itunesUTag = $tagRepo->findOneBy(['cod' => 'ITUNESU']);
 
         foreach ($multimediaObjects as $multimediaObject) {
             $track = $this->getPodcastTrack($multimediaObject, $trackType);
