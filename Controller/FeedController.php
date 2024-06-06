@@ -135,6 +135,7 @@ class FeedController extends Controller
         $mmObjRepo = $this->get('doctrine_mongodb.odm.document_manager')->getRepository(MultimediaObject::class);
         $qb = $mmObjRepo->createStandardQueryBuilder();
         $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
+        $qb->field('status')->equals(MultimediaObject::STATUS_PUBLISHED);
         $qb->field('tracks')->elemMatch(
             $qb->expr()
                 ->field('only_audio')->equals($isOnlyAudio)
