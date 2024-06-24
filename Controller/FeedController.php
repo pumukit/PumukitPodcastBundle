@@ -104,6 +104,18 @@ class FeedController extends Controller
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
+    /**
+     * @Route("/{tag}/audio.xml", defaults={"_format": "xml"}, name="pumukit_podcast_audio_bytag")
+     */
+    public function getAudiosByTagAction(string $tag, Request $request)
+    {
+        $multimediaObjects = $this->getPodcastAudiosByTag(true, $tag);
+        $values = $this->getValues($request, 'audio');
+        $xml = $this->getXMLElement($multimediaObjects, $values, 'audio');
+
+        return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
+    }
+
     private function createPodcastMultimediaObjectByAudioQueryBuilder($isOnlyAudio = false)
     {
         $mmObjRepo = $this->get('doctrine_mongodb.odm.document_manager')->getRepository(MultimediaObject::class);
@@ -113,6 +125,20 @@ class FeedController extends Controller
             $qb->expr()
                 ->field('only_audio')->equals($isOnlyAudio)
                 ->field('tags')->all(['podcast'])
+        );
+
+        return $qb;
+    }
+
+    private function createPodcastAudioByTagQueryBuilder($isOnlyAudio = false)
+    {
+        $mmObjRepo = $this->get('doctrine_mongodb.odm.document_manager')->getRepository(MultimediaObject::class);
+        $qb = $mmObjRepo->createStandardQueryBuilder();
+        $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
+        $qb->field('status')->equals(MultimediaObject::STATUS_PUBLISHED);
+        $qb->field('tracks')->elemMatch(
+            $qb->expr()
+                ->field('only_audio')->equals($isOnlyAudio)
         );
 
         return $qb;
@@ -129,6 +155,14 @@ class FeedController extends Controller
     {
         $qb = $this->createPodcastMultimediaObjectByAudioQueryBuilder($isOnlyAudio);
         $qb->field('series')->references($series);
+
+        return $qb->getQuery()->execute();
+    }
+
+    private function getPodcastAudiosByTag($isOnlyAudio, string $tag)
+    {
+        $qb = $this->createPodcastAudioByTagQueryBuilder($isOnlyAudio);
+        $qb->field('tags.cod')->equals($tag);
 
         return $qb->getQuery()->execute();
     }
