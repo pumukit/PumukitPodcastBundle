@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pumukit\PodcastBundle\Controller;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Pumukit\PodcastBundle\Services\ConfigurationService;
 use Pumukit\SchemaBundle\Document\EmbeddedBroadcast;
 use Pumukit\SchemaBundle\Document\MultimediaObject;
 use Pumukit\SchemaBundle\Document\Series;
@@ -25,44 +26,23 @@ class FeedController extends AbstractController
     public const ITUNESU_FEED_URL = 'https://www.itunesu.com/feed';
     public const ATOM_URL = 'https://www.w3.org/2005/Atom';
 
+    private $configurationService;
     private $documentManager;
     private $router;
     private $context;
-    private $channelTitle;
-    private $channelDescription;
-    private $channelCopyright;
-    private $itunesCategory;
-    private $itunesSummary;
-    private $itunesSubtitle;
-    private $itunesAuthor;
-    private $itunesExplicit;
     private $pumukitInfo;
 
     public function __construct(
+        ConfigurationService $configurationService,
         DocumentManager $documentManager,
         UrlGeneratorInterface $router,
         RequestContext $context,
-        $channelTitle,
-        $channelDescription,
-        $channelCopyright,
-        $itunesCategory,
-        $itunesSummary,
-        $itunesSubtitle,
-        $itunesAuthor,
-        $itunesExplicit,
         $pumukitInfo
     ) {
+        $this->configurationService = $configurationService;
         $this->documentManager = $documentManager;
         $this->router = $router;
         $this->context = $context;
-        $this->channelTitle = $channelTitle;
-        $this->channelDescription = $channelDescription;
-        $this->channelCopyright = $channelCopyright;
-        $this->itunesCategory = $itunesCategory;
-        $this->itunesSummary = $itunesSummary;
-        $this->itunesSubtitle = $itunesSubtitle;
-        $this->itunesAuthor = $itunesAuthor;
-        $this->itunesExplicit = $itunesExplicit;
         $this->pumukitInfo = $pumukitInfo;
     }
 
@@ -223,24 +203,24 @@ class FeedController extends AbstractController
         $values['requestURI'] = $values['base_url'].$request->getRequestUri();
         $values['image_url'] = $values['base_url'].'/bundles/pumukitpodcast/images/gc_'.$audioVideoType.'.jpg';
         $values['language'] = $request->getLocale();
-        $values['itunes_author'] = $this->itunesAuthor;
+        $values['itunes_author'] = $this->configurationService->itunesAuthor();
         $values['email'] = $pumukitInfo['email'];
-        $values['itunes_explicit'] = $this->itunesExplicit ? 'yes' : 'no';
+        $values['itunes_explicit'] = $this->configurationService->itunesExplicit() ? 'yes' : 'no';
 
         if ($series) {
             $values['channel_title'] = $series->getTitle();
             $values['channel_description'] = $series->getDescription();
             $values['copyright'] = $series->getCopyright() ?: 'PuMuKIT2 2015';
-            $values['itunes_category'] = $series->getProperty('itunescategory') ?: $this->itunesCategory;
+            $values['itunes_category'] = $series->getProperty('itunescategory') ?: $this->configurationService->itunesCategory();
             $values['itunes_summary'] = $series->getDescription();
-            $values['itunes_subtitle'] = $series->getSubtitle() ?: ($this->itunesSubtitle ?: $values['channel_description']);
+            $values['itunes_subtitle'] = $series->getSubtitle() ?: ($this->configurationService->itunesSubtitle() ?: $values['channel_description']);
         } else {
-            $values['channel_title'] = $this->channelTitle ?: $pumukitInfo['title'];
-            $values['channel_description'] = $this->channelDescription ?: $pumukitInfo['description'];
-            $values['copyright'] = $this->channelCopyright ?: $pumukitInfo['copyright'] ?? 'PuMuKIT2 2015';
-            $values['itunes_category'] = $this->itunesCategory;
-            $values['itunes_summary'] = $this->itunesSummary ?: $values['channel_description'];
-            $values['itunes_subtitle'] = $this->itunesSubtitle ?: $values['channel_description'];
+            $values['channel_title'] = $this->configurationService->channelTitle() ?: $pumukitInfo['title'];
+            $values['channel_description'] = $this->configurationService->channelDescription() ?: $pumukitInfo['description'];
+            $values['copyright'] = $this->configurationService->channelCopyright() ?: $pumukitInfo['copyright'] ?? 'PuMuKIT2 2015';
+            $values['itunes_category'] = $this->configurationService->itunesCategory();
+            $values['itunes_summary'] = $this->configurationService->itunesSummary() ?: $values['channel_description'];
+            $values['itunes_subtitle'] = $this->configurationService->itunesSubtitle() ?: $values['channel_description'];
         }
 
         return $values;
