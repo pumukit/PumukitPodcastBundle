@@ -11,6 +11,7 @@ services:
     tags: ['controller.service_arguments']
 
   Pumukit\PodcastBundle\Services\ConfigurationService:
+    class: Pumukit\PodcastBundle\Services\ConfigurationService
     arguments:
       $channelTitle: '%pumukit_podcast.channel_title%'
       $channelDescription: '%pumukit_podcast.channel_description%'
