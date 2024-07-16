@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pumukit\PodcastBundle\Controller;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Pumukit\PodcastBundle\Services\ConfigurationService;
 use Pumukit\SchemaBundle\Document\EmbeddedBroadcast;
 use Pumukit\SchemaBundle\Document\MultimediaObject;
 use Pumukit\SchemaBundle\Document\Series;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RequestContext;
 
 /**
  * @Route("/podcast")
@@ -24,13 +26,24 @@ class FeedController extends AbstractController
     public const ITUNESU_FEED_URL = 'https://www.itunesu.com/feed';
     public const ATOM_URL = 'https://www.w3.org/2005/Atom';
 
+    private $configurationService;
     private $documentManager;
     private $router;
+    private $context;
+    private $pumukitInfo;
 
-    public function __construct(DocumentManager $documentManager, UrlGeneratorInterface $router)
-    {
+    public function __construct(
+        ConfigurationService $configurationService,
+        DocumentManager $documentManager,
+        UrlGeneratorInterface $router,
+        RequestContext $context,
+        $pumukitInfo
+    ) {
+        $this->configurationService = $configurationService;
         $this->documentManager = $documentManager;
         $this->router = $router;
+        $this->context = $context;
+        $this->pumukitInfo = $pumukitInfo;
     }
 
     /**
@@ -111,6 +124,18 @@ class FeedController extends AbstractController
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
+    /**
+     * @Route("/{tag}/audio.xml", defaults={"_format": "xml"}, name="pumukit_podcast_audio_bytag")
+     */
+    public function getAudiosByTagAction(string $tag, Request $request)
+    {
+        $multimediaObjects = $this->getPodcastAudiosByTag(true, $tag);
+        $values = $this->getValues($request, 'audio');
+        $xml = $this->getXMLElement($multimediaObjects, $values, 'audio');
+
+        return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
+    }
+
     private function createPodcastMultimediaObjectByAudioQueryBuilder($isOnlyAudio = false)
     {
         $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
@@ -119,6 +144,19 @@ class FeedController extends AbstractController
             $qb->expr()
                 ->field('only_audio')->equals($isOnlyAudio)
                 ->field('tags')->all(['podcast'])
+        );
+
+        return $qb;
+    }
+
+    private function createPodcastAudioByTagQueryBuilder($isOnlyAudio = false)
+    {
+        $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
+        $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
+        $qb->field('status')->equals(MultimediaObject::STATUS_PUBLISHED);
+        $qb->field('tracks')->elemMatch(
+            $qb->expr()
+                ->field('only_audio')->equals($isOnlyAudio)
         );
 
         return $qb;
@@ -139,6 +177,14 @@ class FeedController extends AbstractController
         return $qb->getQuery()->execute();
     }
 
+    private function getPodcastAudiosByTag($isOnlyAudio, string $tag)
+    {
+        $qb = $this->createPodcastAudioByTagQueryBuilder($isOnlyAudio);
+        $qb->field('tags.cod')->equals($tag);
+
+        return $qb->getQuery()->execute();
+    }
+
     private function getPodcastMultimediaObjectsBySeries(Series $series)
     {
         $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
@@ -150,32 +196,31 @@ class FeedController extends AbstractController
 
     private function getValues(Request $request, $audioVideoType = 'video', $series = null)
     {
-        $container = $this->container;
-        $pumukitInfo = $container->getParameter('pumukit.info');
+        $pumukitInfo = $this->pumukitInfo;
 
         $values = [];
         $values['base_url'] = $this->getBaseUrl().$request->getBasePath();
         $values['requestURI'] = $values['base_url'].$request->getRequestUri();
         $values['image_url'] = $values['base_url'].'/bundles/pumukitpodcast/images/gc_'.$audioVideoType.'.jpg';
         $values['language'] = $request->getLocale();
-        $values['itunes_author'] = $container->getParameter('pumukit_podcast.itunes_author');
+        $values['itunes_author'] = $this->configurationService->itunesAuthor();
         $values['email'] = $pumukitInfo['email'];
-        $values['itunes_explicit'] = $container->getParameter('pumukit_podcast.itunes_explicit') ? 'yes' : 'no';
+        $values['itunes_explicit'] = $this->configurationService->itunesExplicit() ? 'yes' : 'no';
 
         if ($series) {
             $values['channel_title'] = $series->getTitle();
             $values['channel_description'] = $series->getDescription();
             $values['copyright'] = $series->getCopyright() ?: 'PuMuKIT2 2015';
-            $values['itunes_category'] = $series->getProperty('itunescategory') ?: $container->getParameter('pumukit_podcast.itunes_category');
+            $values['itunes_category'] = $series->getProperty('itunescategory') ?: $this->configurationService->itunesCategory();
             $values['itunes_summary'] = $series->getDescription();
-            $values['itunes_subtitle'] = $series->getSubtitle() ?: ($container->getParameter('pumukit_podcast.itunes_subtitle') ?: $values['channel_description']);
+            $values['itunes_subtitle'] = $series->getSubtitle() ?: ($this->configurationService->itunesSubtitle() ?: $values['channel_description']);
         } else {
-            $values['channel_title'] = $container->getParameter('pumukit_podcast.channel_title') ?: $pumukitInfo['title'];
-            $values['channel_description'] = $container->getParameter('pumukit_podcast.channel_description') ?: $pumukitInfo['description'];
-            $values['copyright'] = $container->getParameter('pumukit_podcast.channel_copyright') ?: $pumukitInfo['copyright'] ?? 'PuMuKIT2 2015';
-            $values['itunes_category'] = $container->getParameter('pumukit_podcast.itunes_category');
-            $values['itunes_summary'] = $container->getParameter('pumukit_podcast.itunes_summary') ?: $values['channel_description'];
-            $values['itunes_subtitle'] = $container->getParameter('pumukit_podcast.itunes_subtitle') ?: $values['channel_description'];
+            $values['channel_title'] = $this->configurationService->channelTitle() ?: $pumukitInfo['title'];
+            $values['channel_description'] = $this->configurationService->channelDescription() ?: $pumukitInfo['description'];
+            $values['copyright'] = $this->configurationService->channelCopyright() ?: $pumukitInfo['copyright'] ?? 'PuMuKIT2 2015';
+            $values['itunes_category'] = $this->configurationService->itunesCategory();
+            $values['itunes_summary'] = $this->configurationService->itunesSummary() ?: $values['channel_description'];
+            $values['itunes_subtitle'] = $this->configurationService->itunesSubtitle() ?: $values['channel_description'];
         }
 
         return $values;
@@ -231,9 +276,7 @@ class FeedController extends AbstractController
 
     private function completeTracksInfo($channel, $multimediaObjects, $values, $trackType = 'video')
     {
-        $dm = $this->get('doctrine_mongodb.odm.document_manager');
-        $router = $this->get('router');
-        $tagRepo = $dm->getRepository(Tag::class);
+        $tagRepo = $this->documentManager->getRepository(Tag::class);
         $itunesUTag = $tagRepo->findOneBy(['cod' => 'ITUNESU']);
 
         foreach ($multimediaObjects as $multimediaObject) {
@@ -259,25 +302,25 @@ class FeedController extends AbstractController
                 }
 
                 if ($multimediaObject->isPublished() && $multimediaObject->containsTagWithCod('PUCHWEBTV')) {
-                    $link = $router->generate('pumukit_webtv_multimediaobject_index', ['id' => $multimediaObject->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+                    $link = $this->router->generate('pumukit_webtv_multimediaobject_index', ['id' => $multimediaObject->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
                     $item->addChild('link', $link);
                 }
 
                 $enclosure = $item->addChild('enclosure');
                 $enclosure->addAttribute('url', $this->getAbsoluteUrl($track->getUrl()));
-                $enclosure->addAttribute('length', $track->getSize());
+                $enclosure->addAttribute('length', (string) $track->getSize());
                 $enclosure->addAttribute('type', $track->getMimeType());
 
                 $item->addChild('guid', $this->getAbsoluteUrl($track->getUrl()));
                 $item->addChild('itunes:duration', $this->getDurationString($multimediaObject), self::ITUNES_DTD_URL);
                 $item->addChild('author', $values['email'].' ('.$values['channel_title'].')');
                 $item->addChild('itunes:author', $multimediaObject->getCopyright(), self::ITUNES_DTD_URL);
-                $item->addChild('itunes:keywords', htmlspecialchars($multimediaObject->getKeyword()), self::ITUNES_DTD_URL);
+                $item->addChild('itunes:keywords', htmlspecialchars($multimediaObject->getKeywordsAsString()), self::ITUNES_DTD_URL);
                 $item->addChild('itunes:explicit', $values['itunes_explicit'], self::ITUNES_DTD_URL);
                 $item->addChild('itunes:image', $this->getAbsoluteUrl($multimediaObject->getFirstUrlPic()), self::ITUNES_DTD_URL);
                 $item->addChild('pubDate', $multimediaObject->getRecordDate()->format('r'));
             }
-            $dm->clear();
+            $this->documentManager->clear();
         }
 
         return $channel;
@@ -346,7 +389,7 @@ class FeedController extends AbstractController
 
     private function getBaseUrl()
     {
-        $context = $this->get('router.request_context');
+        $context = $this->context;
         if (!$context) {
             throw new \RuntimeException('To generate an absolute URL for an asset, the Symfony Routing component is required.');
         }

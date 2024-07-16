@@ -3,6 +3,8 @@ services:
     autowire:      true
     autoconfigure: true
     public:        true
+    bind:
+      $pumukitInfo: '%pumukit.info%'
 
   Pumukit\PodcastBundle\Controller\:
     resource: '../../Controller'
