@@ -13,6 +13,7 @@ use Pumukit\SchemaBundle\Document\Tag;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RequestContext;
@@ -138,12 +139,15 @@ class FeedController extends AbstractController
 
     private function createPodcastMultimediaObjectByAudioQueryBuilder($isOnlyAudio = false)
     {
+        $tags = ['podcast'];
         $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
         $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
+        if ($isOnlyAudio) {
+            $tags = ['podcast', 'audio'];
+        }
         $qb->field('tracks')->elemMatch(
             $qb->expr()
-                ->field('only_audio')->equals($isOnlyAudio)
-                ->field('tags')->all(['podcast'])
+                ->field('tags')->all($tags)
         );
 
         return $qb;
@@ -154,10 +158,12 @@ class FeedController extends AbstractController
         $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
         $qb->field('embeddedBroadcast.type')->equals(EmbeddedBroadcast::TYPE_PUBLIC);
         $qb->field('status')->equals(MultimediaObject::STATUS_PUBLISHED);
-        $qb->field('tracks')->elemMatch(
-            $qb->expr()
-                ->field('only_audio')->equals($isOnlyAudio)
-        );
+        if ($isOnlyAudio) {
+            $qb->field('tracks')->elemMatch(
+                $qb->expr()
+                    ->field('tags')->all(['audio'])
+            );
+        }
 
         return $qb;
     }
@@ -307,11 +313,13 @@ class FeedController extends AbstractController
                 }
 
                 $enclosure = $item->addChild('enclosure');
-                $enclosure->addAttribute('url', $this->getAbsoluteUrl($track->getUrl()));
-                $enclosure->addAttribute('length', (string) $track->getSize());
-                $enclosure->addAttribute('type', $track->getMimeType());
+                $enclosure->addAttribute('url', $this->getAbsoluteUrl($track->storage()->url()->url()));
+                $enclosure->addAttribute('length', (string) $track->metadata()->size());
+                $mimeTypes = new MimeTypes();
+                $mimeType = $mimeTypes->guessMimeType($track->storage()->path()->path());
+                $enclosure->addAttribute('type', $mimeType);
 
-                $item->addChild('guid', $this->getAbsoluteUrl($track->getUrl()));
+                $item->addChild('guid', $this->getAbsoluteUrl($track->storage()->url()->url()));
                 $item->addChild('itunes:duration', $this->getDurationString($multimediaObject), self::ITUNES_DTD_URL);
                 $item->addChild('author', $values['email'].' ('.$values['channel_title'].')');
                 $item->addChild('itunes:author', $multimediaObject->getCopyright(), self::ITUNES_DTD_URL);
