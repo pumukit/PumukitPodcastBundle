@@ -52,13 +52,13 @@ EOT
             $output->writeln('');
             $output->writeln('Please run the operation with --force to execute.');
 
-            return -1;
+            return Command::FAILURE;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
-    private function createTagWithCode(string $code, string $title, string $tagParentCode = null, bool $metatag = false): Tag
+    private function createTagWithCode(string $code, string $title, ?string $tagParentCode = null, bool $metatag = false): Tag
     {
         if ($tag = $this->documentManager->getRepository(Tag::class)->findOneBy(['cod' => $code])) {
             throw new \Exception('Nothing done - Tag retrieved from DB id: '.$tag->getId().' cod: '.$tag->getCod());

@@ -1,4 +1,4 @@
 pumukit_podcast_bundle:
     resource: "@PumukitPodcastBundle/Controller/"
-    type:     annotation
+    type:     attribute
     prefix:   /

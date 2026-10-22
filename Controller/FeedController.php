@@ -14,13 +14,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mime\MimeTypes;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RequestContext;
 
-/**
- * @Route("/podcast")
- */
+#[Route('/podcast')]
 class FeedController extends AbstractController
 {
     public const ITUNES_DTD_URL = 'https://www.itunes.com/dtds/podcast-1.0.dtd';
@@ -47,9 +45,7 @@ class FeedController extends AbstractController
         $this->pumukitInfo = $pumukitInfo;
     }
 
-    /**
-     * @Route("/list.xml", defaults={"_format": "xml"}, name="pumukit_podcast_list")
-     */
+    #[Route('/list.xml', name: 'pumukit_podcast_list', defaults: ['_format' => 'xml'])]
     public function listAction(): Response
     {
         $qb = $this->documentManager->getRepository(MultimediaObject::class)->createStandardQueryBuilder();
@@ -65,9 +61,7 @@ class FeedController extends AbstractController
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
-    /**
-     * @Route("/video.xml", defaults={"_format": "xml"}, name="pumukit_podcast_video")
-     */
+    #[Route('/video.xml', name: 'pumukit_podcast_video', defaults: ['_format' => 'xml'])]
     public function videoAction(Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudio(false);
@@ -77,9 +71,7 @@ class FeedController extends AbstractController
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
-    /**
-     * @Route("/audio.xml", defaults={"_format": "xml"}, name="pumukit_podcast_audio")
-     */
+    #[Route('/audio.xml', name: 'pumukit_podcast_audio', defaults: ['_format' => 'xml'])]
     public function audioAction(Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudio(true);
@@ -89,9 +81,7 @@ class FeedController extends AbstractController
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
-    /**
-     * @Route("/series/{id}/video.xml", defaults={"_format": "xml"}, name="pumukit_podcast_series_video")
-     */
+    #[Route('/series/{id}/video.xml', name: 'pumukit_podcast_series_video', defaults: ['_format' => 'xml'])]
     public function seriesVideoAction(Series $series, Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudioAndSeries(false, $series);
@@ -101,9 +91,7 @@ class FeedController extends AbstractController
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
-    /**
-     * @Route("/series/{id}/audio.xml", defaults={"_format": "xml"}, name="pumukit_podcast_series_audio")
-     */
+    #[Route('/series/{id}/audio.xml', name: 'pumukit_podcast_series_audio', defaults: ['_format' => 'xml'])]
     public function seriesAudioAction(Series $series, Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsByAudioAndSeries(true, $series);
@@ -113,9 +101,7 @@ class FeedController extends AbstractController
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
-    /**
-     * @Route("/series/{id}/collection.xml", defaults={"_format": "xml"}, name="pumukit_podcast_series_collection")
-     */
+    #[Route('/series/{id}/collection.xml', name: 'pumukit_podcast_series_collection', defaults: ['_format' => 'xml'])]
     public function seriesCollectionAction(Series $series, Request $request): Response
     {
         $multimediaObjects = $this->getPodcastMultimediaObjectsBySeries($series);
@@ -125,9 +111,7 @@ class FeedController extends AbstractController
         return new Response($xml->asXML(), 200, ['Content-Type' => 'text/xml']);
     }
 
-    /**
-     * @Route("/{tag}/audio.xml", defaults={"_format": "xml"}, name="pumukit_podcast_audio_bytag")
-     */
+    #[Route('/{tag}/audio.xml', name: 'pumukit_podcast_audio_bytag', defaults: ['_format' => 'xml'])]
     public function getAudiosByTagAction(string $tag, Request $request)
     {
         $multimediaObjects = $this->getPodcastAudiosByTag(true, $tag);

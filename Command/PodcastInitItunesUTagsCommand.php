@@ -52,7 +52,7 @@ EOT
         $output->writeln('');
         $output->writeln('Please run the operation with --force to execute.');
 
-        return -1;
+        return Command::FAILURE;
     }
 
     protected function executeTags(InputInterface $input, OutputInterface $output): int
@@ -63,14 +63,14 @@ EOT
         if ((0 == strcmp($file, '')) && (!$finder)) {
             $output->writeln("<error>Tags: There's no data to initialize</error>");
 
-            return -1;
+            return Command::FAILURE;
         }
 
         $root = $this->documentManager->getRepository(Tag::class)->findOneBy(['cod' => 'ROOT']);
         if (null === $root) {
             $output->writeln("<error>Tags: There's no ROOT tag. Please exec pumukit:init:repo tag</error>");
 
-            return -1;
+            return Command::FAILURE;
         }
 
         if ($file) {
@@ -81,7 +81,7 @@ EOT
             }
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function createFromFile($file, $root, OutputInterface $output, $repoName)
@@ -89,7 +89,7 @@ EOT
         if (!file_exists($file)) {
             $output->writeln('<error>'.$repoName.': Error stating '.$file.'</error>');
 
-            return -1;
+            return Command::FAILURE;
         }
 
         $idCodMapping = [];
@@ -127,7 +127,7 @@ EOT
         } else {
             $output->writeln('<error>Error opening '.$file.'</error>');
 
-            return -1;
+            return Command::FAILURE;
         }
     }
 
