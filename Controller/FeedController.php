@@ -274,9 +274,9 @@ class FeedController extends AbstractController
             if ($track) {
                 $item = $channel->addChild('item');
 
-                $title = (0 === strlen($multimediaObject->getTitle())) ?
-                  $multimediaObject->getSeries()->getTitle() :
-                  $multimediaObject->getTitle();
+                $title = (0 === strlen($multimediaObject->getTitle()))
+                  ? $multimediaObject->getSeries()->getTitle()
+                  : $multimediaObject->getTitle();
                 $item->addChild('title', htmlspecialchars($title));
                 $item->addChild('itunes:subtitle', htmlspecialchars($multimediaObject->getSubtitle()), self::ITUNES_DTD_URL);
                 $item->addChild('itunes:summary', htmlspecialchars($multimediaObject->getDescription()), self::ITUNES_DTD_URL);

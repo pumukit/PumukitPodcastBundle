@@ -6,34 +6,16 @@ namespace Pumukit\PodcastBundle\Services;
 
 class ConfigurationService
 {
-    private $channelTitle;
-    private $channelDescription;
-    private $channelCopyright;
-    private $itunesCategory;
-    private $itunesSummary;
-    private $itunesSubtitle;
-    private $itunesAuthor;
-    private $itunesExplicit;
-
     public function __construct(
-        string $channelTitle,
-        string $channelDescription,
-        string $channelCopyright,
-        string $itunesCategory,
-        string $itunesSummary,
-        string $itunesSubtitle,
-        string $itunesAuthor,
-        bool $itunesExplicit
-    ) {
-        $this->channelTitle = $channelTitle;
-        $this->channelDescription = $channelDescription;
-        $this->channelCopyright = $channelCopyright;
-        $this->itunesCategory = $itunesCategory;
-        $this->itunesSummary = $itunesSummary;
-        $this->itunesSubtitle = $itunesSubtitle;
-        $this->itunesAuthor = $itunesAuthor;
-        $this->itunesExplicit = $itunesExplicit;
-    }
+        private readonly string $channelTitle,
+        private readonly string $channelDescription,
+        private readonly string $channelCopyright,
+        private readonly string $itunesCategory,
+        private readonly string $itunesSummary,
+        private readonly string $itunesSubtitle,
+        private readonly string $itunesAuthor,
+        private readonly bool $itunesExplicit,
+    ) {}
 
     public function channelTitle(): string
     {

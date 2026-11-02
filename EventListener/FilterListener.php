@@ -12,12 +12,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class FilterListener
 {
-    private $documentManager;
-
-    public function __construct(DocumentManager $documentManager)
-    {
-        $this->documentManager = $documentManager;
-    }
+    public function __construct(private readonly DocumentManager $documentManager) {}
 
     public function onKernelRequest(RequestEvent $event): void
     {

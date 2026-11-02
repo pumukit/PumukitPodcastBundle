@@ -6,26 +6,23 @@ namespace Pumukit\PodcastBundle\Command;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Pumukit\SchemaBundle\Document\Tag;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(name: 'podcast:init:tags', description: 'Load podcast tag data fixture to your database')]
 class PodcastInitTagsCommand extends Command
 {
-    private $documentManager;
-
-    public function __construct(DocumentManager $documentManager)
+    public function __construct(private readonly DocumentManager $documentManager)
     {
-        $this->documentManager = $documentManager;
         parent::__construct();
     }
 
     protected function configure(): void
     {
         $this
-            ->setName('podcast:init:tags')
-            ->setDescription('Load podcast tag data fixture to your database')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action')
             ->setHelp(
                 <<<'EOT'
