@@ -1,113 +1,42 @@
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
-    </button>
-    <h4 class="modal-title"
-        id="myModalLabel">{% trans %}Podcast info For Multimedia Object: {% endtrans %} {{ mm.title }}</h4>
-</div>
-<div class="modal-body podcast-modal-body">
-    <div class="col-md-8 input-group">
-        <dl class="dl-horizontal">
-            <dt>
-                {% trans %}Status{% endtrans %}:
-            </dt>
-            <dd>
-                {% if not mm.containsTagWithCod('PUCHPODCAST') %}
-                    {% trans %}Not published on PodcastEDU/iTunesU.{% endtrans %}
-                {% else %}
-                    {% set has_video = false %}
-                    {% set has_audio = false %}
-                    {% for track in mm.getTracksWithTag('podcast') %}
-                        {% if track.getOnlyAudio() %}
-                            {% set has_audio = true %}
-                        {% else %}
-                            {% set has_video = true %}
-                        {% endif %}
-                    {% endfor %}
-                    {% set is_audio = mm.getTrackWithTag('master').isOnlyAudio() %}
-                    {% if not has_video and not is_audio %}
-                        <span class="label label-dismissable label-warning">
-                    <i class="mdi-action-report-problem alert-warning"></i>
-                    {% trans %}WARNING, Not video tracks with{% endtrans %} <span
-                                class="label label-primary">podcast</span> tag.
-                </span>
-                    {% elseif not has_audio %}
-                        <span class="label label-dismissable label-warning">
-                    <i class="mdi-action-report-problem alert-warning"></i>
-                    {% trans %}WARNING, Not audio tracks with{% endtrans %} <span
-                                class="label label-primary">podcast</span> tag.
-                </span>
-                    {% endif %}
-                    {% if has_audio and (has_video or is_audio) %}
-                        {% trans %}Published{% endtrans %}.
-                    {% endif %}
-                {% endif %}
-            </dd>
-        </dl>
-    </div>
-</div>
-
+{% set feeds = [
+    {route: 'pumukit_podcast_series_audio', label: 'Audio POD', help: 'It downloads and subscribes to an audio-only podcasts of this series.'},
+    {route: 'pumukit_podcast_series_video', label: 'Video POD', help: 'It downloads and subscribes to the full video podcasts of this series.'},
+    {route: 'pumukit_podcast_series_collection', label: 'All POD', help: 'It downloads and subscribes to the video and audio podcasts of this series.'},
+] %}
 
 <div class="modal-header">
-    <h4 class="modal-title"
-        id="myModalLabel">{% trans %}Podcast info For Series: {% endtrans %} {{ mm.series.title }}</h4>
+    <h3 class="modal-title fs-5">{% trans %}Podcast{% endtrans %}</h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans %}Close{% endtrans %}"></button>
 </div>
-<div class="modal-body podcast-modal-body">
-    <div class="col-md-8 input-group">
-        <dl class="dl-horizontal">
-            <dt data-toggle="tooltip" data-placement="top"
-                title="{% trans %}It downloads and subscribes to an audio-only podcasts of this series.{% endtrans %}">
-                {% trans %}Audio POD{% endtrans %}:
-            </dt>
-            <dd>
-                {% set url = url('pumukit_podcast_series_audio', {'id': mm.series.id}, true) %}
-                <div class="input-group">
-                    <input type="text" class="form-control" id="inputROUrlAudioPID" readonly onclick="select()"
-                           value="http:{{ url }}"/>
-                    <span class="input-group-addon"
-                          title="{% trans %}Subscribe to this series podcast (requires iTunes){% endtrans %}">
-            <a href="itpc:{{ url }}" target="_blank"><i class="mdi-av-my-library-music"></i></a>
-          </span>
-                </div>
-            </dd>
+<div class="modal-body">
+    <h4 class="fs-6">{% trans %}Podcast info For Multimedia Object:{% endtrans %} {{ mm.title }}</h4>
+    <dl class="row">
+        <dt class="col-sm-3">{% trans %}Status{% endtrans %}</dt>
+        <dd class="col-sm-9">
+            {% if not published %}
+                {% trans %}Not published on Podcast.{% endtrans %}
+            {% elseif not hasVideo and not mm.isOnlyAudio() %}
+                <span class="badge text-bg-warning"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% trans %}WARNING, Not video tracks with{% endtrans %} <span class="badge text-bg-primary">podcast</span> {% trans %}tag{% endtrans %}</span>
+            {% elseif not hasAudio %}
+                <span class="badge text-bg-warning"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% trans %}WARNING, Not audio tracks with{% endtrans %} <span class="badge text-bg-primary">podcast</span> {% trans %}tag{% endtrans %}</span>
+            {% else %}
+                {% trans %}Published{% endtrans %}.
+            {% endif %}
+        </dd>
+    </dl>
 
-            <dt data-toggle="tooltip" data-placement="top"
-                title="{% trans %}It downloads and subscribes to the full video podcasts of this series.{% endtrans %}">
-                {% trans %}Video POD{% endtrans %}:
-            </dt>
-            <dd>
-                {% set url = url('pumukit_podcast_series_video', {'id': mm.series.id}, true) %}
-                <div class="input-group">
-                    <input type="text" class="form-control" id="inputROUrlVideoPID" readonly onclick="select()"
-                           value="http:{{ url }}"/>
-                    <span class="input-group-addon"
-                          title="{% trans %}Subscribe to this series podcast (requires iTunes){% endtrans %}">
-            <a href="itpc:{{ url }}" target="_blank"><i class="mdi-av-my-library-music"></i></a>
-          </span>
-                </div>
-            </dd>
-
-            <dt data-toggle="tooltip" data-placement="top"
-                title="{% trans %}It downloads and subscribes to the video and audio podcasts of this series.{% endtrans %}">
-                {% trans %}All POD{% endtrans %}:
-            </dt>
-            <dd>
-                {% set url = url('pumukit_podcast_series_collection', {'id': mm.series.id}, true) %}
-                <div class="input-group">
-                    <input type="text" class="form-control" id="inputROUrlVideoPID" readonly onclick="select()"
-                           value="http:{{ url }}"/>
-                    <span class="input-group-addon"
-                          title="{% trans %}Subscribe to this series podcast (requires iTunes){% endtrans %}">
-            <a href="itpc:{{ url }}" target="_blank"><i class="mdi-av-my-library-music"></i></a>
-          </span>
-                </div>
-            </dd>
-        </dl>
-    </div>
+    <h4 class="fs-6">{% trans %}Podcast info For Series:{% endtrans %} {{ mm.series.title }}</h4>
+    {% for feed in feeds %}
+        <div class="mb-3">
+            <label class="form-label" for="podcast-feed-{{ loop.index }}">{{ feed.label|trans }}</label>
+            <input type="text" class="form-control" id="podcast-feed-{{ loop.index }}" readonly
+                   aria-describedby="podcast-feed-help-{{ loop.index }}"
+                   data-controller="core--select" data-action="click->core--select#select"
+                   value="{{ url(feed.route, {id: mm.series.id}) }}">
+            <div class="form-text" id="podcast-feed-help-{{ loop.index }}">{{ feed.help|trans }}</div>
+        </div>
+    {% endfor %}
 </div>
-
-
-<script>
-    $(function () {
-        $('.podcast-modal-body [data-toggle="tooltip"]').tooltip();
-    });
-</script>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans %}Close{% endtrans %}</button>
+</div>

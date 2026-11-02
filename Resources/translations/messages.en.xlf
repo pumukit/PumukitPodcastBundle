@@ -13,9 +13,9 @@
         <source>Status</source>
         <target>Status</target>
       </trans-unit>
-      <trans-unit id="EBpIBDL" resname="Not published on PodcastEDU/iTunesU.">
-        <source>Not published on PodcastEDU/iTunesU.</source>
-        <target>Not published on PodcastEDU/iTunesU.</target>
+      <trans-unit id="EBpIBDL" resname="Not published on Podcast.">
+        <source>Not published on Podcast.</source>
+        <target>Not published on Podcast.</target>
       </trans-unit>
       <trans-unit id="oxi14Qd" resname="WARNING, Not video tracks with">
         <source>WARNING, Not video tracks with</source>
@@ -41,10 +41,6 @@
         <source>Audio POD</source>
         <target>Audio POD</target>
       </trans-unit>
-      <trans-unit id="f8RqpkC" resname="Subscribe to this series podcast (requires iTunes)">
-        <source>Subscribe to this series podcast (requires iTunes)</source>
-        <target>Subscribe to this series podcast (requires iTunes)</target>
-      </trans-unit>
       <trans-unit id="BaeZGD3" resname="It downloads and subscribes to the full video podcasts of this series.">
         <source>It downloads and subscribes to the full video podcasts of this series.</source>
         <target>It downloads and subscribes to the full video podcasts of this series.</target>
@@ -60,6 +56,10 @@
       <trans-unit id="6BPh_z7" resname="All POD">
         <source>All POD</source>
         <target>All POD</target>
+      </trans-unit>
+      <trans-unit id="podcastTag" resname="tag">
+        <source>tag</source>
+        <target>tag</target>
       </trans-unit>
     </body>
   </file>
