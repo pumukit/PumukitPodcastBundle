@@ -7,15 +7,36 @@ namespace Pumukit\PodcastBundle\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader;
 
-class PumukitPodcastExtension extends Extension
+class PumukitPodcastExtension extends Extension implements PrependExtensionInterface
 {
+    public const CACHE_POOL = 'pumukit_podcast.cache';
+
+    public function prepend(ContainerBuilder $container): void
+    {
+        $container->prependExtensionConfig('framework', [
+            'cache' => [
+                'pools' => [
+                    self::CACHE_POOL => ['adapter' => 'cache.app'],
+                ],
+            ],
+        ]);
+    }
+
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
+        $config = $this->processConfiguration(new Configuration(), $configs);
 
+        $container->setParameter('pumukit_podcast.enable', $config['enable']);
+        $container->setParameter('pumukit_podcast.feed_limit', $config['feed_limit']);
+        $container->setParameter('pumukit_podcast.series_feed_limit', $config['series_feed_limit']);
+        $container->setParameter('pumukit_podcast.cache_ttl', $config['cache_ttl']);
+        $container->setParameter('pumukit_podcast.image', $config['image']);
+        $container->setParameter('pumukit_podcast.language', $config['language'] ?? '%kernel.default_locale%');
+        $container->setParameter('pumukit_podcast.tag_feeds.channel', $config['tag_feeds']['channel']);
+        $container->setParameter('pumukit_podcast.tag_feeds.groups', $config['tag_feeds']['groups']);
         $container->setParameter('pumukit_podcast.channel_title', $config['channel_title']);
         $container->setParameter('pumukit_podcast.channel_description', $config['channel_description']);
         $container->setParameter('pumukit_podcast.channel_copyright', $config['channel_copyright']);

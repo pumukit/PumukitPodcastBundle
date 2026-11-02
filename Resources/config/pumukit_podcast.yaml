@@ -10,6 +10,10 @@ services:
     resource: '../../Controller'
     tags: ['controller.service_arguments']
 
+  Pumukit\PodcastBundle\Command\:
+    resource: '../../Command/'
+    tags: ['console.command']
+
   Pumukit\PodcastBundle\Services\ConfigurationService:
     class: Pumukit\PodcastBundle\Services\ConfigurationService
     arguments:
@@ -21,8 +25,19 @@ services:
       $itunesSubtitle: '%pumukit_podcast.itunes_subtitle%'
       $itunesAuthor: '%pumukit_podcast.itunes_author%'
       $itunesExplicit: '%pumukit_podcast.itunes_explicit%'
+      $enable: '%pumukit_podcast.enable%'
+      $feedLimit: '%pumukit_podcast.feed_limit%'
+      $seriesFeedLimit: '%pumukit_podcast.series_feed_limit%'
+      $cacheTtl: '%pumukit_podcast.cache_ttl%'
+      $image: '%pumukit_podcast.image%'
+      $language: '%pumukit_podcast.language%'
+      $tagFeedsChannel: '%pumukit_podcast.tag_feeds.channel%'
+      $tagFeedsGroups: '%pumukit_podcast.tag_feeds.groups%'
 
-  Pumukit\PodcastBundle\EventListener\FilterListener:
-    class: Pumukit\PodcastBundle\EventListener\FilterListener
-    tags:
-      - { name: "kernel.event_listener", event: "kernel.request" }
+  Pumukit\PodcastBundle\Services\EpisodeRepository: ~
+
+  Pumukit\PodcastBundle\Services\FeedWriter: ~
+
+  Pumukit\PodcastBundle\Services\FeedService:
+    arguments:
+      $cache: '@pumukit_podcast.cache'

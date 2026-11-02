@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Pumukit\PodcastBundle\Services;
 
+use Pumukit\PodcastBundle\PumukitPodcastBundle;
+
 class ConfigurationService
 {
     public function __construct(
@@ -15,6 +17,14 @@ class ConfigurationService
         private readonly string $itunesSubtitle,
         private readonly string $itunesAuthor,
         private readonly bool $itunesExplicit,
+        private readonly bool $enable = true,
+        private readonly int $feedLimit = 100,
+        private readonly int $seriesFeedLimit = 500,
+        private readonly int $cacheTtl = 1800,
+        private readonly ?string $image = null,
+        private readonly string $language = 'en',
+        private readonly string $tagFeedsChannel = 'PUCHPODCAST',
+        private readonly array $tagFeedsGroups = [],
     ) {}
 
     public function channelTitle(): string
@@ -55,5 +65,50 @@ class ConfigurationService
     public function itunesExplicit(): bool
     {
         return $this->itunesExplicit;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enable;
+    }
+
+    public function feedLimit(): int
+    {
+        return $this->feedLimit;
+    }
+
+    public function seriesFeedLimit(): int
+    {
+        return $this->seriesFeedLimit;
+    }
+
+    public function cacheTtl(): int
+    {
+        return $this->cacheTtl;
+    }
+
+    public function image(): ?string
+    {
+        return $this->image;
+    }
+
+    public function language(): string
+    {
+        return $this->language;
+    }
+
+    public function tagFeedsChannel(): string
+    {
+        return $this->tagFeedsChannel;
+    }
+
+    public function tagFeedsGroup(string $name): ?array
+    {
+        return $this->tagFeedsGroups[$name] ?? null;
+    }
+
+    public function channels(): array
+    {
+        return array_values(array_unique([PumukitPodcastBundle::PODCAST_TAG, $this->tagFeedsChannel]));
     }
 }

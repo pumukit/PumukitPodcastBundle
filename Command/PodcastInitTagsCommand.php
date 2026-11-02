@@ -38,7 +38,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('force')) {
-            $podcastPublicationChannelTag = $this->createTagWithCode('PUCHPODCAST', 'PodcastEDU/iTunesU', 'PUBCHANNELS', false);
+            $podcastPublicationChannelTag = $this->createTagWithCode('PUCHPODCAST', 'Podcast', 'PUBCHANNELS', false);
             $podcastPublicationChannelTag->setProperty('modal_path', 'pumukitpodcast_modal_index');
             $this->documentManager->persist($podcastPublicationChannelTag);
             $this->documentManager->flush();
