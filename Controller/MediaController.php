@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pumukit\PodcastBundle\Controller;
 
+use Pumukit\BasePlayerBundle\Services\TrackUrlService;
 use Pumukit\PodcastBundle\Services\ConfigurationService;
 use Pumukit\PodcastBundle\Services\EpisodeRepository;
 use Pumukit\SchemaBundle\Document\Exception\PathException;
@@ -19,6 +20,7 @@ class MediaController extends AbstractController
     public function __construct(
         private readonly EpisodeRepository $episodes,
         private readonly ConfigurationService $configuration,
+        private readonly TrackUrlService $trackUrlService,
     ) {}
 
     #[Route('/podcast/media/{id}.{ext}', name: 'pumukit_podcast_media', requirements: ['id' => '[a-f\d]{24}', 'ext' => '[A-Za-z0-9]{1,5}'], methods: ['GET', 'HEAD'])]
@@ -40,7 +42,7 @@ class MediaController extends AbstractController
                 throw $this->createNotFoundException();
             }
 
-            return new RedirectResponse($url);
+            return new RedirectResponse($this->trackUrlService->signForDownloadServer($url));
         }
 
         $path = $storage->path()?->path();
