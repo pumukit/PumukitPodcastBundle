@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Pumukit\PodcastBundle\Controller;
 
-use Pumukit\PodcastBundle\Services\ConfigurationService;
 use Pumukit\PodcastBundle\Services\EpisodeType;
 use Pumukit\PodcastBundle\Services\Feed;
 use Pumukit\PodcastBundle\Services\FeedService;
@@ -22,30 +21,23 @@ class FeedController extends AbstractController
 
     public function __construct(
         private readonly FeedService $feedService,
-        private readonly ConfigurationService $configuration,
     ) {}
 
     #[Route('/list.xml', name: 'pumukit_podcast_list')]
     public function listAction(Request $request): Response
     {
-        $this->assertEnabled();
-
         return $this->respond($request, $this->feedService->list($this->baseUrl($request)));
     }
 
     #[Route('/video.xml', name: 'pumukit_podcast_video')]
     public function videoAction(Request $request): Response
     {
-        $this->assertEnabled();
-
         return $this->respond($request, $this->feedService->latest(EpisodeType::VIDEO, $this->baseUrl($request)));
     }
 
     #[Route('/audio.xml', name: 'pumukit_podcast_audio')]
     public function audioAction(Request $request): Response
     {
-        $this->assertEnabled();
-
         return $this->respond($request, $this->feedService->latest(EpisodeType::AUDIO, $this->baseUrl($request)));
     }
 
@@ -70,7 +62,6 @@ class FeedController extends AbstractController
     #[Route('/{tag}/audio.xml', name: 'pumukit_podcast_audio_bytag')]
     public function getAudiosByTagAction(string $tag, Request $request): Response
     {
-        $this->assertEnabled();
         $feed = $this->feedService->tag($tag, $this->baseUrl($request));
         if (!$feed instanceof Feed) {
             throw $this->createNotFoundException();
@@ -81,7 +72,6 @@ class FeedController extends AbstractController
 
     private function series(Request $request, Series $series, EpisodeType $type): Response
     {
-        $this->assertEnabled();
         if ($series->isHide()) {
             throw $this->createNotFoundException();
         }
@@ -105,12 +95,5 @@ class FeedController extends AbstractController
     private function baseUrl(Request $request): string
     {
         return $request->getSchemeAndHttpHost().$request->getBasePath();
-    }
-
-    private function assertEnabled(): void
-    {
-        if (!$this->configuration->isEnabled()) {
-            throw $this->createNotFoundException();
-        }
     }
 }

@@ -93,7 +93,7 @@ pumukit_podcast:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `enable` | `true` | If false, the feeds, the episodes and the back-office modal return 404 |
+| `enable` | `true` | If false, the feeds, the episodes and the back-office modal return 404 and nothing else of the bundle is loaded: no commands, services or cache pool |
 | `feed_limit` | `100` | Maximum number of episodes of the global and tag feeds |
 | `series_feed_limit` | `500` | Maximum number of episodes of the series feeds |
 | `cache_ttl` | `1800` | Seconds a generated feed is served from the cache; `0` generates it on every request |

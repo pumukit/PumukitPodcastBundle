@@ -6,7 +6,6 @@ namespace Pumukit\PodcastBundle\Controller;
 
 use Pumukit\NewAdminBundle\Controller\NewAdminControllerInterface;
 use Pumukit\PodcastBundle\PumukitPodcastBundle;
-use Pumukit\PodcastBundle\Services\ConfigurationService;
 use Pumukit\PodcastBundle\Services\EpisodeType;
 use Pumukit\SchemaBundle\Document\MultimediaObject;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,15 +16,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ACCESS_MULTIMEDIA_SERIES')]
 class ModalController extends AbstractController implements NewAdminControllerInterface
 {
-    public function __construct(private readonly ConfigurationService $configuration) {}
-
     #[Route('/admin/podcast/model/mm/{id}', name: 'pumukitpodcast_modal_index', methods: ['GET'])]
     public function indexAction(MultimediaObject $multimediaObject): Response
     {
-        if (!$this->configuration->isEnabled()) {
-            throw $this->createNotFoundException();
-        }
-
         return $this->render('@PumukitPodcast/Modal/index.html.twig', [
             'mm' => $multimediaObject,
             'published' => $multimediaObject->containsTagWithCod(PumukitPodcastBundle::PODCAST_TAG),

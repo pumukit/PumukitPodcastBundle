@@ -18,7 +18,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
             ->booleanNode('enable')
-            ->info('If false, the feeds, the episodes and the backoffice modal return 404')
+            ->info('If false, the feeds, the episodes and the backoffice modal return 404 and nothing else of the bundle is loaded: no commands, services or cache pool')
             ->defaultTrue()
             ->end()
             ->integerNode('feed_limit')

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pumukit\PodcastBundle\DependencyInjection;
 
+use Pumukit\PodcastBundle\Routing\RouteLoader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -16,6 +17,10 @@ class PumukitPodcastExtension extends Extension implements PrependExtensionInter
 
     public function prepend(ContainerBuilder $container): void
     {
+        if (!$this->processConfiguration(new Configuration(), $container->getExtensionConfig($this->getAlias()))['enable']) {
+            return;
+        }
+
         $container->prependExtensionConfig('framework', [
             'cache' => [
                 'pools' => [
@@ -45,6 +50,15 @@ class PumukitPodcastExtension extends Extension implements PrependExtensionInter
         $container->setParameter('pumukit_podcast.itunes_subtitle', $config['itunes_subtitle']);
         $container->setParameter('pumukit_podcast.itunes_author', $config['itunes_author']);
         $container->setParameter('pumukit_podcast.itunes_explicit', $config['itunes_explicit']);
+
+        $container->register(RouteLoader::class)
+            ->setArguments(['$enabled' => '%pumukit_podcast.enable%', '$env' => '%kernel.environment%'])
+            ->addTag('routing.loader')
+        ;
+
+        if (!$config['enable']) {
+            return;
+        }
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('pumukit_podcast.yaml');

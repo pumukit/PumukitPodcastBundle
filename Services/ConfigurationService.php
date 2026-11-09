@@ -17,7 +17,6 @@ class ConfigurationService
         private readonly string $itunesSubtitle,
         private readonly string $itunesAuthor,
         private readonly bool $itunesExplicit,
-        private readonly bool $enable = true,
         private readonly int $feedLimit = 100,
         private readonly int $seriesFeedLimit = 500,
         private readonly int $cacheTtl = 1800,
@@ -65,11 +64,6 @@ class ConfigurationService
     public function itunesExplicit(): bool
     {
         return $this->itunesExplicit;
-    }
-
-    public function isEnabled(): bool
-    {
-        return $this->enable;
     }
 
     public function feedLimit(): int

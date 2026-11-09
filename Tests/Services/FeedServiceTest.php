@@ -64,7 +64,7 @@ class FeedServiceTest extends PodcastTestCase
 
     private function service(int $feedLimit = 100, int $seriesFeedLimit = 500, ?string $image = null, string $language = 'en', string $tagFeedsChannel = 'PUCHPODCAST', array $tagFeedsGroups = []): FeedService
     {
-        $configuration = new ConfigurationService('Channel', 'Description', 'Copyright', 'Education', 'Summary', 'Subtitle', 'Author', false, true, $feedLimit, $seriesFeedLimit, 0, $image, $language, $tagFeedsChannel, $tagFeedsGroups);
+        $configuration = new ConfigurationService('Channel', 'Description', 'Copyright', 'Education', 'Summary', 'Subtitle', 'Author', false, $feedLimit, $seriesFeedLimit, 0, $image, $language, $tagFeedsChannel, $tagFeedsGroups);
         $container = self::getContainer();
 
         return new FeedService(
