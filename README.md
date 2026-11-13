@@ -24,10 +24,11 @@ pumukit_podcast:
     prefix:   /
 ```
 
-Create the `PUCHPODCAST` publication channel:
+Create the `PUCHPODCAST` publication channel with `php bin/console pumukit:setup` of PuMuKIT, which runs the setup of
+every enabled bundle, or only with:
 
 ```bash
-php bin/console podcast:init:tags --force
+php bin/console podcast:init:tags
 ```
 
 ## Feeds
@@ -144,3 +145,5 @@ The info icon of the **Podcast** channel in the **Publication** tab of a video o
 - The `frontend` filter of the bundle is removed: the feeds and the episodes check the rules in their own queries.
 - The modal of the **Publication** tab uses Bootstrap 5 and needs `ROLE_ACCESS_MULTIMEDIA_SERIES`. `podcast:init:tags`
   names the channel *Podcast* instead of *PodcastEDU/iTunesU*; the existing tag keeps its title.
+- `podcast:init:tags` no longer needs `--force` and does nothing if the channel exists, instead of failing, so
+  `pumukit:setup` runs it on every deployment.
