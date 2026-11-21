@@ -49,9 +49,12 @@ the `podcast` and `audio` tags, and the video episodes use a track with `podcast
 not be hidden. The episodes are sorted by publication date, newest first, and each feed only has the newest ones:
 `feed_limit` in the global and tag feeds and `series_feed_limit` in the series feeds.
 
-Each episode links to `/podcast/media/{track}.{ext}`, a public URL that does not expire. It checks the same rules and
-delivers the file through NGINX with `X-Accel-Redirect`, like `/trackfile/`, or redirects to the URL of an external
-track. A track whose file is missing is left out of the feeds.
+Each episode links to `/podcast/media/{track}.{ext}`, a public URL that does not expire. It checks the same rules and,
+like `/trackfile/`, answers a `302` to a signed URL of the download server of PuMuKIT (`PUMUKIT_DOWNLOAD_SERVER_URL`),
+or to the URL of an external track; PHP never sends the file. The podcast apps must follow the redirect and reach the
+host of the download server. It answers `404` when the file is missing and `503` when the download server cannot serve
+it (no download server configured, a file outside the storage or an HLS track in a shared directory). A track whose file
+is missing is left out of the feeds.
 
 ### Cache
 
@@ -128,7 +131,9 @@ The info icon of the **Podcast** channel in the **Publication** tab of a video o
   video instead of the recording date.
 - **The URL of the episodes changes** to `/podcast/media/{track}.{ext}`: the files are no longer served from
   `/storage`, which PuMuKIT 6.0 blocks, and the `/trackfile/` URLs expire. The `guid` keeps its previous value, with
-  `isPermaLink="false"`, so the podcast apps do not download the episodes again.
+  `isPermaLink="false"`, so the podcast apps do not download the episodes again. The `guid` is the URL of the track:
+  `pumukit:hls:move-to-own-directory` of the core changes the URL of the HLS tracks it moves, so the podcast apps may
+  show those episodes again.
 - The iTunes U categories are removed: the `itunesu` namespace of the feeds, the `ITUNESU` tags and the
   `pumukit:podcast:init:itunesu` command. iTunes U closed in 2021. The `ITUNESU` tags already in the database are not
   deleted.
