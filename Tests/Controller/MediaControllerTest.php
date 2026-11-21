@@ -15,31 +15,19 @@ use Pumukit\SchemaBundle\Document\MultimediaObject;
  */
 class MediaControllerTest extends PodcastTestCase
 {
-    public function testThePublishedEpisodeIsDeliveredThroughTheProxy(): void
-    {
-        $episode = $this->episode('Episode');
-
-        $this->client->request('GET', $this->url($episode), server: [
-            'HTTP_X_SENDFILE_TYPE' => 'X-Accel-Redirect',
-            'HTTP_X_ACCEL_MAPPING' => dirname($this->file).'/=/internal-storage/',
-        ]);
-
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseHeaderSame('X-Accel-Redirect', rawurlencode('/internal-storage/'.basename($this->file)));
-        $this->assertStringContainsString('inline', $this->client->getResponse()->headers->get('Content-Disposition'));
-    }
-
-    public function testPhpSendsTheEpisodeWithoutTheProxy(): void
+    public function testThePublishedEpisodeIsRedirectedToTheDownloadServer(): void
     {
         $episode = $this->episode('Episode');
 
         $this->client->request('GET', $this->url($episode));
 
-        $this->assertResponseIsSuccessful();
-        $this->assertSame(2048, strlen($this->client->getInternalResponse()->getContent()));
+        $this->assertResponseRedirects();
+        $location = (string) $this->client->getResponse()->headers->get('Location');
+        $this->assertStringStartsWith(self::DOWNLOAD_SERVER.'/files/downloads/'.basename($this->file).'?token=', $location);
+        $this->assertStringNotContainsString('forcedl', $location);
 
         $this->client->request('HEAD', $this->url($episode));
-        $this->assertResponseIsSuccessful();
+        $this->assertResponseRedirects();
     }
 
     public function testAnExternalEpisodeIsRedirected(): void

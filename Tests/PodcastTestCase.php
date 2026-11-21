@@ -21,13 +21,22 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 abstract class PodcastTestCase extends PumukitTestCase
 {
+    public const DOWNLOAD_SERVER = 'https://dls.example.org';
     protected KernelBrowser $client;
     protected Series $series;
     protected string $file;
+    protected string $storageDir;
+    private array $previousEnv = [];
     private int $numericalId = 0;
 
     public function setUp(): void
     {
+        $this->storageDir = (string) realpath(sys_get_temp_dir()).'/podcast-'.bin2hex(random_bytes(6));
+        mkdir($this->storageDir.'/downloads', 0777, true);
+        foreach (['PUMUKIT_STORAGE_DIR' => $this->storageDir, 'PUMUKIT_DOWNLOAD_SERVER_URL' => self::DOWNLOAD_SERVER] as $name => $value) {
+            $this->previousEnv[$name] = [$_ENV[$name] ?? null, $_SERVER[$name] ?? null];
+            $_ENV[$name] = $_SERVER[$name] = $value;
+        }
         self::ensureKernelShutdown();
         $this->client = static::createClient();
         $this->dm = self::getContainer()->get('doctrine_mongodb.odm.document_manager');
@@ -42,7 +51,7 @@ abstract class PodcastTestCase extends PumukitTestCase
         $this->series = $this->series('Physics & Maths');
         $this->dm->flush();
 
-        $this->file = sys_get_temp_dir().'/pumukit-podcast-'.bin2hex(random_bytes(4)).'.mp3';
+        $this->file = $this->storageDir.'/downloads/pumukit-podcast-'.bin2hex(random_bytes(4)).'.mp3';
         file_put_contents($this->file, str_repeat('a', 2048));
     }
 
@@ -50,6 +59,20 @@ abstract class PodcastTestCase extends PumukitTestCase
     {
         if (is_file($this->file)) {
             unlink($this->file);
+        }
+        @rmdir($this->storageDir.'/downloads');
+        @rmdir($this->storageDir);
+        foreach ($this->previousEnv as $name => [$env, $server]) {
+            if (null === $env) {
+                unset($_ENV[$name]);
+            } else {
+                $_ENV[$name] = $env;
+            }
+            if (null === $server) {
+                unset($_SERVER[$name]);
+            } else {
+                $_SERVER[$name] = $server;
+            }
         }
         parent::tearDown();
     }
