@@ -25,7 +25,7 @@ final class EpisodeRepository
     {
         return $this->episodes(PumukitPodcastBundle::PODCAST_TAG, $type)
             ->limit($this->configuration->feedLimit())
-            ->getQuery()->execute()->toArray()
+            ->getQuery()->toArray()
         ;
     }
 
@@ -34,7 +34,7 @@ final class EpisodeRepository
         return $this->episodes(PumukitPodcastBundle::PODCAST_TAG, $type)
             ->field('series')->references($series)
             ->limit($this->configuration->seriesFeedLimit())
-            ->getQuery()->execute()->toArray()
+            ->getQuery()->toArray()
         ;
     }
 
@@ -45,7 +45,7 @@ final class EpisodeRepository
 
         return $queryBuilder
             ->limit($this->configuration->feedLimit())
-            ->getQuery()->execute()->toArray()
+            ->getQuery()->toArray()
         ;
     }
 
@@ -56,13 +56,13 @@ final class EpisodeRepository
             ->distinct('_id')
             ->getQuery()->execute()
         ;
-        $hidden = array_map(static fn ($id): string => (string) $id, is_array($hidden) ? $hidden : iterator_to_array($hidden, false));
+        $hidden = array_map(static fn ($id): string => (string) $id, is_iterable($hidden) ? iterator_to_array($hidden, false) : []);
 
         $ids = $this->episodes(PumukitPodcastBundle::PODCAST_TAG, EpisodeType::ALL)
             ->distinct('series')
             ->getQuery()->execute()
         ;
-        $ids = array_map(static fn ($id): string => (string) $id, is_array($ids) ? $ids : iterator_to_array($ids, false));
+        $ids = array_map(static fn ($id): string => (string) $id, is_iterable($ids) ? iterator_to_array($ids, false) : []);
 
         return array_values(array_diff($ids, $hidden));
     }
